@@ -1,0 +1,433 @@
+红酒探索
+========================================================
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+
+library(ggplot2)
+library(grid)
+library(gridExtra)
+library(dplyr)
+library(GGally)
+library(scales)
+library(memisc)
+library(MASS)
+```
+
+```{r echo=FALSE, Load_the_Data}
+# Load the Data
+wine <- read.csv('G:/Udacity 数据分析（进阶）/P4项目/wineQualityReds.csv')
+```
+
+```{r echo=FALSE}
+
+plot_h = function(arg1,bin=20)
+{
+  ggplot(aes_string(x = arg1), data = wine)+
+    geom_histogram(bins =  bin, color = 'black', fill = 'orange')
+}
+
+```
+
+
+# 单变量绘图
+```{r echo=FALSE, Univariate_Plots}
+names(wine)
+summary(wine)
+
+```
+#### 该数据集包含了1599条红酒记录，共12个变量（其中11个基于物理测试的输入变量，1个基于主观感受的输出变量）
+
+```{r echo=FALSE}
+plot_h('quality',6) +
+  scale_x_continuous(breaks = seq(3,8,1))
+
+
+summary(wine$quality)
+```
+#### 评分最低分为3分，最高分为8分（满分10分），平均分为5.636，中位数6分；大部分都分布在5-6分之间，符合正态分布。
+  
+  
+##### *fixed.acidity*
+```{r }
+plot_h('fixed.acidity',30) +
+  scale_x_continuous(breaks = seq(4,16,1))
+
+plot_h('log(fixed.acidity)',30) +
+  scale_x_continuous(breaks = seq(1.5,3,0.1))
+
+summary(wine$fixed.acidity)
+```
+  
+##### *volatile.acidity*
+```{r echo=FALSE,warning=FALSE,message=FALSE}
+plot_h('volatile.acidity',30)
+
+plot_h('log(volatile.acidity)',30)
+
+summary(wine$volatile.acidity)
+```
+  
+  
+##### *citric.acid*
+```{r echo=FALSE}
+plot_h('citric.acid',30)
+
+summary(wine$citric.acid)
+```
+
+
+#### fixed acidity 最低为4.6，最高为15.90，平均为8.32，中位数是7.9；大部分分布在6-10之间。原始数据略有长尾，所以进行了log变化，使分布更趋近正态分布；
+
+#### volatile acidity 最低为0.12，最高为1.58，平均为0.5278，中位数是0.52；大部分分布在0.3-0.7之间。原始数据长尾，所以进行了log变化；
+
+#### citric acidity 最低为0，最高为1，平均为0.271，中位数是0.26；出现了两个峰值，一个是在0的时候，猜测为很多红酒并没有添加柠檬酸；另一个是出现在0.49。超过0.75的几乎没有了，但在1的时候存在一个观察值。
+
+  
+  
+##### *residual.sugar*
+```{r echo=FALSE}
+plot_h('residual.sugar',20)+
+  scale_x_continuous(breaks = seq(0,16,1))
+
+plot_h('log(residual.sugar)',20)+
+  scale_x_continuous(breaks = seq(0,16,1))
+
+summary(wine$residual.sugar)
+```
+#### residual sugar 最低为0.9，最高为15.5，平均为2.539，中位数是2.2；大部分都分布在1.5-2.6之间，最高峰出现在2的时候，大于7的就已经很少了，数据存在长尾，进行了log变化。
+  
+  
+##### *chlorides*
+```{r echo=FALSE}
+plot_h('chlorides',20)
+
+plot_h('log(chlorides)',20)
+
+summary(wine$chlorides)
+```
+#### chlorides 最低为0.012，最高为0.611，平均为0.087，中位数是0.079；大部分都分布在0.05-0.1之间，最高峰出现在0.08的时候，大于0.2的非常少，数据存在长尾，进行了log变化。
+  
+  
+##### *free.sulfur.dioxide*
+```{r echo=FALSE}
+plot_h('free.sulfur.dioxide',20)+
+  scale_x_continuous(breaks = seq(0,80,4))
+
+plot_h('log(free.sulfur.dioxide)',20)
+
+summary(wine$free.sulfur.dioxide)
+```
+  
+  
+##### *total.sulfur.dioxide*
+```{r echo=FALSE}
+plot_h('total.sulfur.dioxide',20)+
+  scale_x_continuous(breaks = seq(0,300,10))
+
+plot_h('log(total.sulfur.dioxide)',20)
+
+summary(wine$total.sulfur.dioxide)
+```
+
+#### free sulfur dioxide 最低为1，最高为72，平均为15.87，中位数是14；大部分都分布在4-28之间，最高峰出现在6的时候，3/4位数和最大值差异很大，数据存在长尾，进行了log变化。
+
+#### total sulfur dioxide 最低为1，最高为289，平均为46.47，中位数是38；大部分都分布在10-60之间，最高峰出现在20的时候，3/4位数和最大值差异很大，有几个异常值出现在280-290之间，如此高浓度的total sulfur dioxide会导致酒有一种刺鼻的醋味。数据存在长尾，进行了log变化。
+  
+  
+##### *density*
+```{r echo=FALSE,message=FALSE}
+plot_h('density',30)
+
+summary(wine$density)
+```
+  
+  
+##### *pH*
+```{r echo=FALSE,message=FALSE}
+plot_h('pH')
+
+summary(wine$pH)
+```
+#### 密度最低为0.9901，最高为1.0037，平均为0.9967，中位数是0.9968；大部分都分布在0.995-1之间，符合正态分布。基本上密度都与水相似。
+#### pH值最低为2.74，最高为4.01，平均为3.311，中位数是3.31；符合正态分布。
+  
+  
+##### *sulphates*
+```{r echo=FALSE,message=FALSE}
+plot_h('sulphates',20)
+
+plot_h('log(sulphates)',20)
+
+summary(wine$sulphates)
+```
+#### sulphates 最低为0.33，最高为2，平均为0.658，中位数是0.62；数据存在长尾，进行了log变化。
+  
+  
+##### *alcohol*
+```{r echo=FALSE}
+plot_h('alcohol',20) +
+  scale_x_continuous(breaks = seq(8,16,0.5))
+
+summary(wine$alcohol)
+```
+#### alcohol 最低为8.4，最高为14.9，平均为10.42，中位数是10.2；最高峰出现在9.5左右，随后开始逐渐下降
+
+# 单因素分析
+
+### **你的数据集结构是怎样的？**
+#### 该数据集包含了1599条红酒记录，共12个变量（其中11个基于物理测试的输入变量，1个基于主观感受的输出变量）。
+* #### 评分大多数都集中在5-6分;
+* #### 有不少数据都存在特别大的极值，远超过平均数据
+* #### 大约三分之一的红酒并没有添加柠檬酸
+* #### 残糖量很少会大于7
+* #### 基本都会添加少量二氧化硫
+* #### 酒精含量基本在9-11度之间
+
+### **主要对数据集中那些特征感兴趣？**
+#### 主要对评分和几个类型的酸以及残糖比较感兴趣，因为评分是衡量酒好坏的最直观指标。而我想找出可以预测评分的最主要的几个指标，我认为几种酸和残糖跟其他元素组合可能是对于预测评分起到最关键的作用。
+
+### **数据中其他哪些特征你认为会为你探索感兴趣的特征带来帮助?**
+#### 游离二氧化硫和二氧化硫总量以及硫酸盐，他们的含量高低同样会影响酒的风味。
+
+### **你从现有的数据集变量中创建了新的变量了么?**
+#### 我暂时没有创建新的变量。
+
+### **对于你感兴趣的特征，他们有什么异常的分布么？你有对数据进行任何清洗，调整或改编数据的形式么？如果有，你为什么这么做？**
+#### 固定性酸、挥发性酸和柠檬酸还有残糖都有很长的尾巴，其中柠檬酸出现了两个峰值，在0的时候峰值最高，其后下降，到0.49的时候又出现了一次峰值但没有第一次的高，大约为其一半左右。柠檬酸、残糖、游离二氧化硫、二氧化硫总量以及硫酸盐都出现了一些过大的极值，远超平均水准。
+
+
+
+
+
+# 双变量绘图
+
+```{r echo=FALSE,fig.height=15, fig.width=15, Bivariate_Plots}
+ggpairs(data = wine)
+```
+
+#### 可以发现评分跟挥发性酸、柠檬酸以及硫酸盐和醇适度相关，而跟其他变量似乎没有太大关系。让我们继续看下各变量详细的箱型图
+```{r echo=FALSE,message=FALSE}
+ggplot(aes(x=factor(quality),y=fixed.acidity),data = wine)+
+  geom_jitter(alpha=0.1) +
+  geom_boxplot(alpha=0.8)
+  
+```
+
+#### 固定性酸似乎确实和评分没有什么太大关系，样本多集中在评分5分到6分的区间，且固定性酸数值集中在6-10的区间。
+
+```{r echo=FALSE,warning=FALSE,message=FALSE}
+ggplot(aes(x=factor(quality),y= volatile.acidity),data = wine)+
+  geom_jitter(alpha=0.1) +
+  geom_boxplot(alpha=0.8) 
+  
+```
+
+#### 可以看出随着评分的提高，挥发性酸中位数逐渐降低，样本多集中在5、6分。
+
+```{r echo=FALSE,message=FALSE}
+ggplot(aes(x= factor(quality),y=citric.acid),data = wine) +
+  geom_jitter(alpha=0.1) +
+  geom_boxplot(alpha=0.8) 
+  
+```
+
+#### 可以看出随着评分的提高，柠檬酸中位数逐渐上升。然而有一个异常值，柠檬酸为1时，其评分并不高。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x=factor(quality),y=residual.sugar),data = wine) +
+  geom_jitter(alpha=0.1)+
+  geom_boxplot(alpha=0.8) 
+```
+
+#### 残糖与评分几乎没关系
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x=factor(quality),y=sulphates),data = wine) +
+  geom_jitter(alpha=0.1) +
+  geom_boxplot(alpha=0.8)
+```
+
+#### 随着评分的提高，硫酸盐中位数略有小幅上升。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x=factor(quality),y=alcohol),data = wine) +
+  geom_jitter(alpha=0.1) +
+  geom_boxplot(alpha=0.8)
+```
+
+#### 随着评分的提高，酒精含量逐渐提高。但在4-5时并没有这种现象，推测酒精度数只能影响高评分的酒，对于低分的酒不管酒精度数如何都没救了。
+
+
+
+```{r, echo=FALSE,message=FALSE}
+ggplot(aes(x=alcohol,y=density),data = wine)+
+  geom_point()+
+  geom_smooth(method = 'lm')
+
+```
+
+#### 酒精含量增加，密度降低，符合我们的物理认知。
+
+```{r,echo=FALSE,message=FALSE}
+ggplot(aes(x=pH,y=fixed.acidity),data = wine) +
+  geom_point() +
+  geom_smooth(method = 'lm')
+```
+
+#### 这是目前发现的相关性最强的一组变量。pH和固定酸度，呈负相关。 
+
+
+# 双变量分析
+
+### **Talk about some of the relationships you observed in this part of the investigation. How did the feature(s) of interest vary with other features in the dataset?**
+#### 固定性酸跟评分之间关系不大，这与我开始的设想有些不同。挥发性酸跟评分有一定的相关性，呈负相关，随着挥发性酸的增加评分降低。柠檬酸跟评分呈正相关，随着柠檬酸的增加评分升高，但是柠檬酸存在一个极大值为1，该值下的评分并不高。残糖同样与评分没有太大关系，这也出乎了我的意料。硫酸盐和评分呈正相关，但在大于1.25后相关度就不高了。酒精跟评分也是呈现正相关，且相关度在所有其他变量跟评分中最高。
+
+
+### **Did you observe any interesting relationships between the other features (not the main feature(s) of interest)?**
+#### 酒精和密度的相关性很高，呈负相关。不过这符合我们的物理认知，我认为这是正常的。
+
+### **What was the strongest relationship you found?**
+#### 柠檬酸和固定酸度，呈正相关，其在所有观察变量对中相关度最高。
+
+
+# 多变量绘图
+```{r echo=FALSE, Multivariate_Plots}
+ggplot(aes(x=volatile.acidity,y=sulphates,color=factor(quality)),data = wine) +
+  geom_point(alpha=0.5, position = 'jitter') +
+  geom_smooth(method = 'lm',se = FALSE,size=1)+
+  scale_color_brewer(palette = 'Blues')+
+  scale_x_continuous(limits = c(0,1.3))
+  
+```
+
+#### 似乎硫酸盐、挥发性酸含量升高，评分相应提高
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x=volatile.acidity,y=alcohol,color= factor(quality)),data = wine) +
+  geom_point(alpha=0.5,position = 'jitter')+
+  geom_smooth(method = 'lm',se = FALSE,size=1)+
+  scale_color_brewer(palette = 'Blues')
+```
+
+#### 酒精度数上升，评分提高；挥发性酸对于中间段的分数没有什么影响，但是对于低分和高分两个极端分数会有较大影响，对于高分段的而言，在一定范围内随着挥发性酸的升高评分提高，对于低分段的随着挥发性酸升高，评分下降。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x=citric.acid,y=alcohol,color=factor(quality)),data = wine) +
+  geom_point(alpha=0.5,size=1,position = 'jitter')+
+  geom_smooth(method = 'lm',se = FALSE)+
+  scale_color_brewer(palette = 'Blues')
+```
+
+#### 对于中间分数段同样影响不大，对于高分和低分段影响较大。高分若要保持分数需随柠檬酸增加降低酒精度，而低分段若要提高分数，需提升柠檬酸和酒精含量。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x=citric.acid,y=sulphates,color=factor(quality)),data = wine) +
+  geom_point(alpha=0.5,size=1,position = 'jitter')+
+  geom_smooth(method = 'lm',se = FALSE)+
+  scale_color_brewer(palette = 'Blues')
+```
+
+#### 评分随着柠檬酸增加降低，随着硫酸盐增加而提高.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x= sulphates,y=alcohol,color=factor(quality)),data = wine) +
+  geom_point(alpha=0.5,size=1,position = 'jitter') +
+  geom_smooth(method = 'lm',se = FALSE)+
+  scale_color_brewer(palette = 'Blues')
+```
+
+#### 硫酸盐对评分影响不大，酒精影响较大。
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+ggplot(aes(x=volatile.acidity,y=citric.acid,color=factor(quality)),data = wine) +
+  geom_point(alpha=0.5,size=1,position = 'jitter')+
+  geom_smooth(method = 'lm',se = FALSE)+
+  scale_color_brewer(palette = 'Blues')  
+```
+
+#### 相关度较高，挥发性酸跟柠檬酸呈反比。
+
+```{r,echo=FALSE, message=FALSE, warning=FALSE}
+m1 = lm(quality ~ alcohol , data = wine)
+m2 = lm(quality ~ alcohol + sulphates , data = wine)
+m3 = lm(quality ~ alcohol + sulphates + citric.acid , data = wine)
+m4 = lm(quality ~ alcohol + sulphates + citric.acid + volatile.acidity, data = wine)
+mtable(m1,m2,m3,m4)
+```
+```{r}
+m <- polr(factor(quality) ~ pH + alcohol + density, data = wine, Hess=TRUE, method = 'logistic')
+summary(m)
+```
+
+
+该线性模型只能解释30%的评分方差，并非一个特别合适的模型
+
+
+
+# 多变量分析
+
+### **Talk about some of the relationships you observed in this part of the investigation. Were there features that strengthened each other in terms of looking at your feature(s) of interest?**
+
+#### 更低的硫酸盐含量和的酒精度数会集中在挥发性酸数值的0.6-0.8之间，我还不清楚为什么会有这样的现象，可能跟他们的物理性质有关吧；当柠檬酸指数为0时，大多数酒精度数和硫酸盐含量都比较低；低酒精度数相对集中在硫酸盐含量为0.5左右，评分处在中间位置。同事在酒精度数9-10度之间，硫酸盐含量最低。
+
+### **Were there any interesting or surprising interactions between features?**
+#### 在挥发性酸数值为0.6-0.8之间集中了更多的低硫酸盐含量和低酒精度数，这让我感到很吃惊，我不清楚在这个范围的挥发性酸是否存在有什么特质，造成这种现象。这又需要日后进一步的探索。
+
+### **OPTIONAL: Did you create any models with your dataset? Discuss the strengths and limitations of your model.**
+#### 用评分和酒精浓度建立了一个线性模型，但似乎表现并不是很好，只能解释评分方差的20%。在加入了硫酸盐之后，稍微好了点，但也只能解释30%，随后又加入了柠檬酸和挥发性酸但是并没有造成影响
+
+
+
+------
+
+# 最终绘图汇总
+
+### 绘图一
+```{r echo=FALSE, Plot_One}
+plot_h('quality',6) +
+  scale_x_continuous(breaks = seq(3,8,1))+
+  ggtitle(label = 'quality distribution')
+```
+
+### 描述一
+#### 评分呈正态分布，符合个人预期。其中评分在5分的红酒数量最多。
+
+### 绘图二
+```{r echo=FALSE,message=FALSE,warning=FALSE, Plot_Two}
+ggplot(aes(x=factor(quality),y= volatile.acidity),data = wine)+
+  geom_jitter(alpha=0.1) +
+  geom_boxplot(alpha=0.8) +
+  ylab('volatile.acidity (g/dm^3)')+
+  ggtitle('quality by volatile acidity')
+
+ggplot(aes(x=factor(quality),y=alcohol),data = wine) +
+  geom_jitter(alpha=0.1) +
+  geom_boxplot(alpha=0.8)+
+  ylab('alcohol (%)') +
+  ggtitle('quality by alcohol')
+```
+
+### 描述二
+#### 随着挥发性酸含量的增加评分下降，这与我的预期相符，因为挥发性酸含量过高会有导致一股难闻的醋味。另外我发现酒精度数也与评分呈现出一定的相关性，度数越高评分也越高，这看起来好像人们都更喜欢喝度数高的酒。
+
+### 绘图三
+```{r echo=FALSE, Plot_Three}
+ggplot(aes(x= sulphates,y=alcohol,color=factor(quality)),data = wine) +
+  geom_point(alpha=0.5,size=1,position = 'jitter') +
+  geom_smooth(method = 'lm',se = FALSE)+
+  scale_color_brewer(palette = 'Blues')+
+  xlab('sulphates (g/dm3)') +
+  ylab('alcohol (%)') +
+  ggtitle('quality by alcohol and sulphates')
+```
+
+### 描述三
+#### 用该图展现的关系构造了线性模型，但是拟合程度不理想。该图展示了，在一定范围内保持硫酸盐浓度不变，酒精度数越高评分越高。
+
+------
+
+# 反思
+
+#### 该数据集包含了1599条红酒记录，以及11个变量（10个客观变量，1个主观变量）。我通过对这个数据集进行探索，希望了解红酒的评分是与那些因素相关，在最后我尝试建立了一个预测红酒评分的线性模型，但是效果并不是很好，还需要在后续探索中改进。
+#### 在开始探索前，我预计固定性酸、挥发性酸、柠檬酸、残糖和硫酸盐会对评分起到较大的影响。在探索后我发现，挥发性酸、柠檬酸、硫酸盐和酒精度数是对于评分起到较大影响的几个因素，另外让我感到吃惊的是残糖这个因素实际上并没有对评分造成太大影响，这与我开始的假设并不相符，因为基于日常经验，糖份应该是对红酒影响非常大的一个因素才对。
+#### 在最后我建立了一个预测评分的模型，但是这个模型效果不好。个人猜测可能是在建立模型时需要对变量进行一些转化，但我尝试了log转化，平方转化等，效果都不佳，在建模这一块，暂时没有特别好的成果，留待日后探索中在日趋完善吧。
